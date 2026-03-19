@@ -1,6 +1,7 @@
 ﻿using Notification.Domain.Enums;
+using Notification.Domain.ValueObjects;
 
 namespace Notification.Api.Models
 {
-    public record SendNotificationRequest(string Recipient, string Content, ChannelType Channel);
+    public record SendNotificationRequest(Recipient Recipient, string Content, ChannelType Channel);
 }

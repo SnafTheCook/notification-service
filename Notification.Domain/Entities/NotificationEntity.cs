@@ -1,4 +1,5 @@
 ﻿using Notification.Domain.Enums;
+using Notification.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,16 +11,16 @@ namespace Notification.Domain.Entities
     public class NotificationEntity
     {
         public Guid Id { get; private set; }
-        public string Recipient { get; private set; }
+        public Recipient Recipient { get; private set; }
         public string Content { get; private set; }
         public ChannelType Channel { get; private set; }
         public NotificationStatus Status { get; private set; }
         public int AttemptCount { get; private set; }
 
-        public NotificationEntity(string recipient, string content, ChannelType channel)
+        public NotificationEntity(Recipient recipient, string content, ChannelType channel)
         {
             Id = Guid.NewGuid();
-            Recipient = recipient;
+            Recipient = Recipient.Create(recipient, channel);
             Content = content;
             Channel = channel;
             Status = NotificationStatus.Pending;
