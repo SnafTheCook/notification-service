@@ -4,6 +4,7 @@ using Notification.Domain.Interfaces;
 using Notification.Infrastructure.BackgroundJobs;
 using Notification.Infrastructure.Data;
 using Notification.Infrastructure.Providers;
+using Notification.Infrastructure.Repositories;
 using Notification.Infrastructure.Services;
 using Notification.Infrastructure.Settings;
 using Scalar.AspNetCore;
@@ -30,6 +31,7 @@ namespace Notification.Api
             builder.Services.AddTransient<INotificationProvider, VonageSmsProvider>();
 
             builder.Services.AddScoped<NotificationDispatcher>();
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
             builder.Services.AddHostedService<RetryWorker>();
 
