@@ -9,9 +9,9 @@ namespace Notification.Domain.Interfaces
 {
     public interface INotificationRepository
     {
-        Task TaskAsync(NotificationEntity notification);
+        Task AddAsync(NotificationEntity notification);
         Task UpdateAsync(NotificationEntity notification);
-        Task<NotificationEntity> GetByIdAsync(Guid id);
+        Task<NotificationEntity?> GetByIdAsync(Guid id);
         Task<IEnumerable<NotificationEntity>> GetPendingRetryAsync();
     }
 }
