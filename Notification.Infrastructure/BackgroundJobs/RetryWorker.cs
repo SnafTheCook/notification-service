@@ -22,10 +22,12 @@ namespace Notification.Infrastructure.BackgroundJobs
                     var repository = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
                     var dispatcher = scope.ServiceProvider.GetRequiredService<NotificationDispatcher>();
 
-                    var pendingNotifications = await repository.GetPendingRetryAsync();
+                    var pendingNotifications = await repository.GetPendingRetryAsync(stoppingToken);
 
                     foreach (var notification in pendingNotifications)
                     {
+                        if (stoppingToken.IsCancellationRequested) break;
+
                         logger.LogInformation("Attemptin retry for notification {id}", notification.Id);
 
                         var success = await dispatcher.TryDispatchAsync(notification);
@@ -35,7 +37,7 @@ namespace Notification.Infrastructure.BackgroundJobs
                         else
                             notification.MarkForRetry();
 
-                        await repository.UpdateAsync(notification);
+                        await repository.UpdateAsync(notification, stoppingToken);
                     }
                 }
 

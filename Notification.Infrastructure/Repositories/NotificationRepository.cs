@@ -18,11 +18,11 @@ namespace Notification.Infrastructure.Repositories
             return await context.Notifications.FindAsync(id);
         }
 
-        public async Task<IEnumerable<NotificationEntity>> GetPendingRetryAsync()
+        public async Task<IEnumerable<NotificationEntity>> GetPendingRetryAsync(CancellationToken ct = default)
         {
             return await context.Notifications
                 .Where(n => n.Status == NotificationStatus.AwaitingRetry)
-                .ToListAsync();
+                .ToListAsync(ct);
         }
 
         public async Task AddAsync(NotificationEntity notification)
@@ -31,10 +31,10 @@ namespace Notification.Infrastructure.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(NotificationEntity notification)
+        public async Task UpdateAsync(NotificationEntity notification, CancellationToken ct = default)
         {
             context.Notifications.Update(notification);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(ct);
         }
     }
 }
