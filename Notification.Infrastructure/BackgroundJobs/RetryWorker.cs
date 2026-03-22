@@ -5,6 +5,7 @@ using Notification.Infrastructure.Data;
 using Notification.Infrastructure.Services;
 using Notification.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Notification.Domain.Interfaces;
 
 namespace Notification.Infrastructure.BackgroundJobs
 {
@@ -18,15 +19,15 @@ namespace Notification.Infrastructure.BackgroundJobs
             {
                 using (var scope = scopeFactory.CreateScope())
                 {
-                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var repository = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
                     var dispatcher = scope.ServiceProvider.GetRequiredService<NotificationDispatcher>();
 
-                    var pendingNotifications = await db.Notifications
-                        .Where(n => n.Status == NotificationStatus.AwaitingRetry)
-                        .ToListAsync(stoppingToken);
+                    var pendingNotifications = await repository.GetPendingRetryAsync(stoppingToken);
 
                     foreach (var notification in pendingNotifications)
                     {
+                        if (stoppingToken.IsCancellationRequested) break;
+
                         logger.LogInformation("Attemptin retry for notification {id}", notification.Id);
 
                         var success = await dispatcher.TryDispatchAsync(notification);
@@ -35,9 +36,9 @@ namespace Notification.Infrastructure.BackgroundJobs
                             notification.MarkAsSent();
                         else
                             notification.MarkForRetry();
-                    }
 
-                    await db.SaveChangesAsync(stoppingToken);
+                        await repository.UpdateAsync(notification, stoppingToken);
+                    }
                 }
 
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
