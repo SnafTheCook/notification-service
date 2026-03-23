@@ -1,5 +1,6 @@
 ﻿using Notification.Domain.Enums;
 using Notification.Domain.Interfaces;
+using Notification.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace Notification.Infrastructure.Providers
 
         public ChannelType SupportedChannel => ChannelType.Email;
 
-        public async Task<bool> SendAsync(string recipient, string content)
+        public async Task<bool> SendAsync(Recipient recipient, string content)
         {
             await Task.Delay(100);
             return true;

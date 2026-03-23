@@ -1,4 +1,5 @@
 ﻿using Notification.Domain.Enums;
+using Notification.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,6 @@ namespace Notification.Domain.Interfaces
     {
         string ProviderName { get; }
         ChannelType SupportedChannel { get; }
-        Task<bool> SendAsync(string recipient, string content);
+        Task<bool> SendAsync(Recipient recipient, string content);
     }
 }
