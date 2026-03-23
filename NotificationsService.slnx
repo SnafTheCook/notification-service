@@ -2,4 +2,5 @@
   <Project Path="Notification.Api/Notification.Api.csproj" />
   <Project Path="Notification.Domain/Notification.Domain.csproj" />
   <Project Path="Notification.Infrastructure/Notification.Infrastructure.csproj" />
+  <Project Path="Notification.Tests/Notification.Tests.csproj" Id="fc6957b9-7732-4d82-9ad9-c4a941f9947f" />
 </Solution>
