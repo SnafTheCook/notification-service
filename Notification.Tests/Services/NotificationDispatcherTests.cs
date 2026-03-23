@@ -22,8 +22,8 @@ namespace Notification.Tests.Services
             mockProvider1.Setup(p => p.SupportedChannel).Returns(ChannelType.Sms);
             mockProvider1.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>())).ThrowsAsync(new Exception("API down"));
 
-            mockProvider1.Setup(p => p.ProviderName).Returns("Vonage");
-            mockProvider1.Setup(p => p.SupportedChannel).Returns(ChannelType.Sms);
+            mockProvider2.Setup(p => p.ProviderName).Returns("Vonage");
+            mockProvider2.Setup(p => p.SupportedChannel).Returns(ChannelType.Sms);
             mockProvider2.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>())).ReturnsAsync(true);
 
             var providers = new List<INotificationProvider> { mockProvider1.Object, mockProvider2.Object };
