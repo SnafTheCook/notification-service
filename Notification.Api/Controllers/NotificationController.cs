@@ -21,11 +21,6 @@ namespace Notification.Api.Controllers
 
             var success = await dispatcher.TryDispatchAsync(notification);
 
-            if (success)
-                notification.MarkAsSent();
-            else
-                notification.MarkForRetry();
-
             await repository.UpdateAsync(notification);
 
             return success

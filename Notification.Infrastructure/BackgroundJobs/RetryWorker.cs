@@ -30,12 +30,14 @@ namespace Notification.Infrastructure.BackgroundJobs
 
                         logger.LogInformation("Attemptin retry for notification {id}", notification.Id);
 
-                        var success = await dispatcher.TryDispatchAsync(notification);
+                        if (!notification.CanRetry)
+                        {
+                            notification.MarkAsFailedPermanently();
+                            await repository.UpdateAsync(notification, stoppingToken);
+                            continue;
+                        }
 
-                        if (success)
-                            notification.MarkAsSent();
-                        else
-                            notification.MarkForRetry();
+                        await dispatcher.TryDispatchAsync(notification);
 
                         await repository.UpdateAsync(notification, stoppingToken);
                     }

@@ -47,6 +47,7 @@ namespace Notification.Infrastructure.Services
                 }
             }
 
+            notification.MarkForRetry();
             return false;
         }
     }
