@@ -1,4 +1,6 @@
-﻿using FluentAssertions;
+﻿using Castle.Core.Logging;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Notification.Domain.Entities;
@@ -45,7 +47,9 @@ namespace Notification.Tests.Services
                 }
             });
 
-            var dispatcher = new NotificationDispatcher(providers, settings);
+            var mockLogger = new Mock<ILogger<NotificationDispatcher>>();
+
+            var dispatcher = new NotificationDispatcher(providers, settings, mockLogger.Object);
             var note = new NotificationEntity(recipient, "Hello World!", ChannelType.Sms);
 
             var result = await dispatcher.TryDispatchAsync(note);
@@ -83,7 +87,9 @@ namespace Notification.Tests.Services
                 }
             });
 
-            var dispatcher = new NotificationDispatcher(new List<INotificationProvider> { providerMock.Object }, settings);
+            var mockLogger = new Mock<ILogger<NotificationDispatcher>>();
+
+            var dispatcher = new NotificationDispatcher(new List<INotificationProvider> { providerMock.Object }, settings, mockLogger.Object);
             var note = new NotificationEntity(Recipient.Create("12345", ChannelType.Sms), "test", ChannelType.Sms);
 
             var result = await dispatcher.TryDispatchAsync(note);
