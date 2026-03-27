@@ -16,6 +16,10 @@ namespace Notification.Domain.Entities
         public ChannelType Channel { get; private set; }
         public NotificationStatus Status { get; private set; }
         public int AttemptCount { get; private set; }
+        public string? SucceededProvider { get; private set; }
+
+        private const int MaxAttempts = 3;
+        public bool CanRetry => AttemptCount < MaxAttempts && Status == NotificationStatus.AwaitingRetry;
 
         public NotificationEntity(Recipient recipient, string content, ChannelType channel)
         {
@@ -26,12 +30,16 @@ namespace Notification.Domain.Entities
             Status = NotificationStatus.Pending;
         }
 
-        public void MarkAsSent() => Status = NotificationStatus.Sent;
+        public void MarkAsSent(string providerName)
+        {
+            Status = NotificationStatus.Sent;
+            SucceededProvider = providerName;
+        }
         public void MarkForRetry()
         {
             Status = NotificationStatus.AwaitingRetry;
             AttemptCount++;
         }
-        public void MarkAsFailed() => Status = NotificationStatus.Failed;
+        public void MarkAsFailedPermanently() => Status = NotificationStatus.Failed;
     }
 }

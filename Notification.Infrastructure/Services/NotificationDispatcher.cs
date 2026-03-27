@@ -2,16 +2,24 @@
 using Notification.Domain.Interfaces;
 using Notification.Domain.Entities;
 using Notification.Infrastructure.Settings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Polly;
+using Polly.Retry;
+using Microsoft.Extensions.Logging;
 
 namespace Notification.Infrastructure.Services
 {
-    public class NotificationDispatcher (IEnumerable<INotificationProvider> providers, IOptions<NotificationSettings> settings)
+    public class NotificationDispatcher (IEnumerable<INotificationProvider> providers, IOptions<NotificationSettings> settings, ILogger<NotificationDispatcher> _logger)
     {
+        private readonly ResiliencePipeline<bool> _retryPipeline = new ResiliencePipelineBuilder<bool>()
+            .AddRetry(new RetryStrategyOptions<bool>
+            {
+                ShouldHandle = new PredicateBuilder<bool>().Handle<Exception>(),
+                BackoffType = DelayBackoffType.Exponential,
+                MaxRetryAttempts = 2,
+                Delay = TimeSpan.FromSeconds(1)
+            })
+            .Build();
+
         public async Task<bool> TryDispatchAsync(NotificationEntity notification)
         {
             var channelConfig = settings.Value.Channels
@@ -30,15 +38,24 @@ namespace Notification.Infrastructure.Services
 
                 try
                 {
-                    var success = await provider.SendAsync(notification.Recipient, notification.Content);
-                    if (success) return true;
+                    var result = await _retryPipeline.ExecuteAsync(async token =>
+                    {
+                        return await provider.SendAsync(notification.Recipient, notification.Content);
+                    });
+
+                    if (result)
+                    {
+                        notification.MarkAsSent(provider.ProviderName);
+                        return true;
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    //try next provider
+                    _logger.LogWarning(ex, "Provider {0} failed after retries. Attempting failover", provider.ProviderName);
                 }
             }
 
+            notification.MarkForRetry();
             return false;
         }
     }

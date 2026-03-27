@@ -1,4 +1,6 @@
-﻿using FluentAssertions;
+﻿using Castle.Core.Logging;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Notification.Domain.Entities;
@@ -45,7 +47,9 @@ namespace Notification.Tests.Services
                 }
             });
 
-            var dispatcher = new NotificationDispatcher(providers, settings);
+            var mockLogger = new Mock<ILogger<NotificationDispatcher>>();
+
+            var dispatcher = new NotificationDispatcher(providers, settings, mockLogger.Object);
             var note = new NotificationEntity(recipient, "Hello World!", ChannelType.Sms);
 
             var result = await dispatcher.TryDispatchAsync(note);
@@ -57,6 +61,41 @@ namespace Notification.Tests.Services
                 r => r.Value == "123456789"), 
                 "Hello World!"), 
                 Times.Once());
+        }
+
+        [Fact]
+        public async Task TryDispatchAsync_WhenAllProvidersFail_ReturnsFalse()
+        {
+            var providerMock = new Mock<INotificationProvider>();
+            providerMock.Setup(p => p.ProviderName).Returns("Twilio");
+            providerMock.Setup(p => p.SupportedChannel).Returns(ChannelType.Sms);
+            providerMock.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>()))
+                .ThrowsAsync(new Exception("Failed reaching provider"));
+
+            var settings = Options.Create(new NotificationSettings
+            {
+                Channels = new List<ChannelConfig>
+                {
+                    new ChannelConfig
+                    {
+                        Type = ChannelType.Sms,
+                        Providers = new List<ProviderConfig>
+                        {
+                            new ProviderConfig { Name = "Twilio", Priority = 1, IsEnabled = true }
+                        }
+                    }
+                }
+            });
+
+            var mockLogger = new Mock<ILogger<NotificationDispatcher>>();
+
+            var dispatcher = new NotificationDispatcher(new List<INotificationProvider> { providerMock.Object }, settings, mockLogger.Object);
+            var note = new NotificationEntity(Recipient.Create("12345", ChannelType.Sms), "test", ChannelType.Sms);
+
+            var result = await dispatcher.TryDispatchAsync(note);
+
+            result.Should().BeFalse();
+            note.Status.Should().NotBe(NotificationStatus.Sent);
         }
     }
 }
