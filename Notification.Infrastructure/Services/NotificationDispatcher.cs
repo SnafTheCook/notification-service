@@ -35,15 +35,22 @@ namespace Notification.Infrastructure.Services
                 var provider = providers.FirstOrDefault(p => string.Equals(p.ProviderName, config.Name));
                 if (provider == null) continue;
 
-                var result = await _retryPipeline.ExecuteAsync(async token =>
+                try
                 {
-                    return await provider.SendAsync(notification.Recipient, notification.Content);
-                });
+                    var result = await _retryPipeline.ExecuteAsync(async token =>
+                    {
+                        return await provider.SendAsync(notification.Recipient, notification.Content);
+                    });
 
-                if (result)
+                    if (result)
+                    {
+                        notification.MarkAsSent(provider.ProviderName);
+                        return true;
+                    }
+                }
+                catch (Exception ex)
                 {
-                    notification.MarkAsSent(provider.ProviderName);
-                    return true;
+                    //TODO: implement logger
                 }
             }
 
