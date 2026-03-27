@@ -4,10 +4,11 @@ using Notification.Domain.Entities;
 using Notification.Infrastructure.Settings;
 using Polly;
 using Polly.Retry;
+using Microsoft.Extensions.Logging;
 
 namespace Notification.Infrastructure.Services
 {
-    public class NotificationDispatcher (IEnumerable<INotificationProvider> providers, IOptions<NotificationSettings> settings)
+    public class NotificationDispatcher (IEnumerable<INotificationProvider> providers, IOptions<NotificationSettings> settings, ILogger<NotificationDispatcher> _logger)
     {
         private readonly ResiliencePipeline<bool> _retryPipeline = new ResiliencePipelineBuilder<bool>()
             .AddRetry(new RetryStrategyOptions<bool>
@@ -50,7 +51,7 @@ namespace Notification.Infrastructure.Services
                 }
                 catch (Exception ex)
                 {
-                    //TODO: implement logger
+                    _logger.LogWarning(ex, "Provider {0} failed after retries. Attempting failover", provider.ProviderName);
                 }
             }
 
