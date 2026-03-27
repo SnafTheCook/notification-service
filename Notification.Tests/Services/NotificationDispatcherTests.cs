@@ -58,5 +58,38 @@ namespace Notification.Tests.Services
                 "Hello World!"), 
                 Times.Once());
         }
+
+        [Fact]
+        public async Task TryDispatchAsync_WhenAllProvidersFail_ReturnsFalse()
+        {
+            var providerMock = new Mock<INotificationProvider>();
+            providerMock.Setup(p => p.ProviderName).Returns("Twilio");
+            providerMock.Setup(p => p.SupportedChannel).Returns(ChannelType.Sms);
+            providerMock.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>()))
+                .ThrowsAsync(new Exception("Failed reaching provider"));
+
+            var settings = Options.Create(new NotificationSettings
+            {
+                Channels = new List<ChannelConfig>
+                {
+                    new ChannelConfig
+                    {
+                        Type = ChannelType.Sms,
+                        Providers = new List<ProviderConfig>
+                        {
+                            new ProviderConfig { Name = "Twilio", Priority = 1, IsEnabled = true }
+                        }
+                    }
+                }
+            });
+
+            var dispatcher = new NotificationDispatcher(new List<INotificationProvider> { providerMock.Object }, settings);
+            var note = new NotificationEntity(Recipient.Create("12345", ChannelType.Sms), "test", ChannelType.Sms);
+
+            var result = await dispatcher.TryDispatchAsync(note);
+
+            result.Should().BeFalse();
+            note.Status.Should().NotBe(NotificationStatus.Sent);
+        }
     }
 }
