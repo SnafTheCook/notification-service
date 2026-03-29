@@ -8,6 +8,7 @@ using Notification.Infrastructure.Repositories;
 using Notification.Infrastructure.Services;
 using Notification.Infrastructure.Settings;
 using Scalar.AspNetCore;
+using FluentValidation;
 
 namespace Notification.Api
 {
@@ -34,6 +35,7 @@ namespace Notification.Api
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
             builder.Services.AddHostedService<RetryWorker>();
+            builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
             var app = builder.Build();
 
