@@ -9,6 +9,7 @@ using Notification.Infrastructure.Services;
 using Notification.Infrastructure.Settings;
 using Scalar.AspNetCore;
 using FluentValidation;
+using Serilog;
 
 namespace Notification.Api
 {
@@ -23,6 +24,10 @@ namespace Notification.Api
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
+
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
             builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection("NotificationSettings"));
@@ -36,6 +41,8 @@ namespace Notification.Api
 
             builder.Services.AddHostedService<RetryWorker>();
             builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+            builder.Host.UseSerilog();
 
             var app = builder.Build();
 
