@@ -56,7 +56,7 @@ namespace Notification.Tests.Services
 
             result.Should().BeTrue();
 
-            mockProvider1.Verify(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>()), Times.Once());
+            mockProvider1.Verify(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>()), Times.Exactly(3));
             mockProvider2.Verify(p => p.SendAsync(It.Is<Recipient>(
                 r => r.Value == "123456789"), 
                 "Hello World!"), 
