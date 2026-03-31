@@ -27,10 +27,11 @@ The project utilizes the .NET Options Pattern to bind configuration directly to 
 * Database: SQLite (configured for zero-friction evaluation)
 * Patterns: Strategy, Options, Dependency Injection, Background Tasks
 
-## Roadmap and Planned Enhancements
-* Value Objects: Refactoring primitive strings (Recipient, Content) into self-validating Value Objects to enforce domain invariants.
-* Repository Pattern: Further decoupling the Domain layer from the persistence framework.
-* Unit Testing: Implementing a full test suite using xUnit and Moq to verify failover logic and retry intervals.
+## Production Readiness
+* **Request Validation:** Utilizes FluentValidation to ensure data integrity at the API boundary, preventing malformed requests from reaching the service layer.
+* **Structured Logging:** Integrated Serilog to provide searchable, high-fidelity logs, essential for diagnosing provider failovers and system monitoring.
+* **Domain Integrity:** Implemented Value Objects (Recipient, MessageContent) to address Primitive Obsession and ensure that domain entities remain in a valid state throughout their lifecycle.
+* **Resilience Pipeline:** Leverages Polly to manage transient faults through exponential backoff retries, ensuring stable communication with external messaging vendors.
 
 ## How to Run
 1. Open the solution in Visual Studio 2022.
