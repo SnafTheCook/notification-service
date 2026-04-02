@@ -29,7 +29,6 @@ namespace Notification.Tests.Services
             mockProvider2.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>())).ReturnsAsync(true);
 
             var providers = new List<INotificationProvider> { mockProvider1.Object, mockProvider2.Object };
-            var recipient = Recipient.Create("123456789", ChannelType.Sms);
 
             var settings = Options.Create(new NotificationSettings
             {
@@ -50,7 +49,7 @@ namespace Notification.Tests.Services
             var mockLogger = new Mock<ILogger<NotificationDispatcher>>();
 
             var dispatcher = new NotificationDispatcher(providers, settings, mockLogger.Object);
-            var note = new NotificationEntity(recipient, "Hello World!", ChannelType.Sms);
+            var note = new NotificationEntity("123456789", "Hello World!", ChannelType.Sms);
 
             var result = await dispatcher.TryDispatchAsync(note);
 
@@ -90,7 +89,7 @@ namespace Notification.Tests.Services
             var mockLogger = new Mock<ILogger<NotificationDispatcher>>();
 
             var dispatcher = new NotificationDispatcher(new List<INotificationProvider> { providerMock.Object }, settings, mockLogger.Object);
-            var note = new NotificationEntity(Recipient.Create("12345", ChannelType.Sms), "test", ChannelType.Sms);
+            var note = new NotificationEntity("123456789", "test", ChannelType.Sms);
 
             var result = await dispatcher.TryDispatchAsync(note);
 
