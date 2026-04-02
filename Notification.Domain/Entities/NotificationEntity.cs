@@ -21,7 +21,7 @@ namespace Notification.Domain.Entities
         private const int MaxAttempts = 3;
         public bool CanRetry => AttemptCount < MaxAttempts && Status == NotificationStatus.AwaitingRetry;
 
-        public NotificationEntity(Recipient recipient, string content, ChannelType channel)
+        public NotificationEntity(string recipient, string content, ChannelType channel)
         {
             Id = Guid.NewGuid();
             Recipient = Recipient.Create(recipient, channel);
