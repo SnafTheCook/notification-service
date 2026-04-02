@@ -10,6 +10,7 @@ using Notification.Infrastructure.Settings;
 using Scalar.AspNetCore;
 using FluentValidation;
 using Serilog;
+using Notification.Infrastructure.Interfaces;
 
 namespace Notification.Api
 {
@@ -38,6 +39,7 @@ namespace Notification.Api
 
             builder.Services.AddScoped<NotificationDispatcher>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
 
             builder.Services.AddHostedService<RetryWorker>();
             builder.Services.AddValidatorsFromAssemblyContaining<Program>();
