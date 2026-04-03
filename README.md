@@ -33,6 +33,12 @@ The project utilizes the .NET Options Pattern to bind configuration directly to 
 * **Domain Integrity:** Implemented Value Objects (Recipient, MessageContent) to address Primitive Obsession and ensure that domain entities remain in a valid state throughout their lifecycle.
 * **Resilience Pipeline:** Leverages Polly to manage transient faults through exponential backoff retries, ensuring stable communication with external messaging vendors.
 
+## Distributed Architecture Integration
+This service is currently being integrated into a wider microservice ecosystem. 
+* **Event-Driven Ready:** Logic has been decoupled into an Application Service layer to support both RESTful requests and asynchronous message consumption.
+* **Service Bus Integration (WIP):** Moving toward Azure Service Bus integration using MassTransit to handle events from external "Producer" services (e.g., Pet Management System).
+* **Event Persistence:** Every incoming event is persisted before processing to ensure "At-Least-Once" delivery guarantees.
+
 ## How to Run
 1. Open the solution in Visual Studio 2022.
 2. Set Notification.Api as the Startup Project.
