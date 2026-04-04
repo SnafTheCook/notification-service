@@ -5,10 +5,14 @@ using Notification.Infrastructure.Settings;
 using Polly;
 using Polly.Retry;
 using Microsoft.Extensions.Logging;
+using Notification.Infrastructure.Interfaces;
 
 namespace Notification.Infrastructure.Services
 {
-    public class NotificationDispatcher (IEnumerable<INotificationProvider> providers, IOptions<NotificationSettings> settings, ILogger<NotificationDispatcher> _logger)
+    public class NotificationDispatcher (
+        IEnumerable<INotificationProvider> providers, 
+        IOptions<NotificationSettings> settings, 
+        ILogger<NotificationDispatcher> _logger) : INotificationDispatcher
     {
         private readonly ResiliencePipeline<bool> _retryPipeline = new ResiliencePipelineBuilder<bool>()
             .AddRetry(new RetryStrategyOptions<bool>

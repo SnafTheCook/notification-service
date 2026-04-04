@@ -4,6 +4,7 @@ using Moq;
 using Notification.Domain.Entities;
 using Notification.Domain.Enums;
 using Notification.Domain.Interfaces;
+using Notification.Infrastructure.Interfaces;
 using Notification.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
@@ -16,13 +17,12 @@ namespace Notification.Tests.Services
     public class NotificationServiceTests
     {
         private readonly Mock<INotificationRepository> _mockRepo = new();
-        private readonly Mock<NotificationDispatcher> _mockDispatcher;
+        private readonly Mock<INotificationDispatcher> _mockDispatcher = new();
         private readonly Mock<ILogger<NotificationService>> _mockLogger = new();
         private readonly NotificationService _notificationService;
 
         public NotificationServiceTests()
         {
-            _mockDispatcher = new Mock<NotificationDispatcher>(new List<INotificationProvider>(), null!, null!);
             _notificationService = new NotificationService(_mockRepo.Object, _mockDispatcher.Object, _mockLogger.Object);
         }
 

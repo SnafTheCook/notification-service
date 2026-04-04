@@ -13,7 +13,7 @@ namespace Notification.Infrastructure.Services
 {
     public class NotificationService(
         INotificationRepository repository,
-        NotificationDispatcher dispatcher,
+        INotificationDispatcher dispatcher,
         ILogger<NotificationService> logger) : INotificationService
     {
         public async Task ProcessNotificationAsync(string recipient, string content, ChannelType channel)
