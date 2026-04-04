@@ -31,7 +31,10 @@ namespace Notification.Tests.Services
         {
             var recipient = "test@test.com";
             var content = "TestMessage";
-            _mockDispatcher.Setup(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>())).ReturnsAsync(true);
+            _mockDispatcher.Setup(
+                d => d.TryDispatchAsync(It.IsAny<NotificationEntity>()))
+                .Callback<NotificationEntity>(n => n.MarkAsSent("TestProvider"))
+                .ReturnsAsync(true);
 
             await _notificationService.ProcessNotificationAsync(recipient, content, ChannelType.Email);
 
