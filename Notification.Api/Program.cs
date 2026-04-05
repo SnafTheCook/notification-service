@@ -11,6 +11,8 @@ using Scalar.AspNetCore;
 using FluentValidation;
 using Serilog;
 using Notification.Infrastructure.Interfaces;
+using Notification.Api.Middleware;
+using Notification.Api.Filters;
 
 namespace Notification.Api
 {
