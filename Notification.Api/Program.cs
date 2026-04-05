@@ -29,7 +29,9 @@ namespace Notification.Api
                 .WriteTo.Console()
                 .CreateLogger();
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options => {
+                options.Filters.Add<ValidationFilter>();
+            });
             builder.Services.AddOpenApi();
             builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection("NotificationSettings"));
 
@@ -63,6 +65,8 @@ namespace Notification.Api
 
             app.UseHttpsRedirection();
             app.UseAuthorization();
+
+            app.UseMiddleware<ErrorHandlerMiddleware>();
 
             app.MapControllers();
             app.Run();
