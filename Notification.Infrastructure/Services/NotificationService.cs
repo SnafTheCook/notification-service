@@ -24,7 +24,10 @@ namespace Notification.Infrastructure.Services
             await dispatcher.TryDispatchAsync(notification);
             await repository.UpdateAsync(notification);
 
-            logger.LogInformation("Processed notification {id}. Status: {status}", notification.Id, notification.Status);
+            logger.LogInformation("Processed notification {id}. Created at: {createdAt}. Status: {status}.",
+                notification.Id,
+                notification.CreatedAt,
+                notification.Status);
         }
     }
 }
