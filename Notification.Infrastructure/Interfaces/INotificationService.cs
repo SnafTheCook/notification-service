@@ -1,4 +1,5 @@
-﻿using Notification.Domain.Enums;
+﻿using Notification.Domain.DTOs;
+using Notification.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace Notification.Infrastructure.Interfaces
     public interface INotificationService
     {
         Task ProcessNotificationAsync(string recipient, string content, ChannelType channel);
+        Task<IEnumerable<NotificationResponseDTO>> GetHistoryAsync(NotificationStatus? status, ChannelType? channel);
     }
 }

@@ -13,4 +13,10 @@ namespace Notification.Domain.Wrappers
         public static ApiResponse Fail(string msg) => new() { Success = false, Error = msg };
         public static ApiResponse Ok() => new() { Success = true };
     }
+
+    public class ApiResponse<T> : ApiResponse
+    {
+        public T? Data { get; set; }
+        public static ApiResponse<T> SuccessData(T data) => new() { Success = true, Data = data };
+    }
 }

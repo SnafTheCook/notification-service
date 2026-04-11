@@ -13,6 +13,19 @@ namespace Notification.Infrastructure.Repositories
 {
     public class NotificationRepository(AppDbContext context) : INotificationRepository
     {
+        public async Task<IEnumerable<NotificationEntity>> GetAllAsync(NotificationStatus? status, ChannelType? channel)
+        {
+            var query = context.Notifications.AsNoTracking();
+
+            if (status.HasValue)
+                query = query.Where(n => n.Status == status.Value);
+
+            if (channel.HasValue)
+                query = query.Where(n => n.Channel == channel.Value);
+
+            return await query.OrderByDescending(n => n.CreatedAt).ToListAsync();
+        }
+
         public async Task<NotificationEntity?> GetByIdAsync(Guid id)
         {
             return await context.Notifications.FindAsync(id);

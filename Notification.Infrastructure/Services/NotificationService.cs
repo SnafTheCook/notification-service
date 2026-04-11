@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Notification.Domain.DTOs;
 using Notification.Domain.Entities;
 using Notification.Domain.Enums;
 using Notification.Domain.Interfaces;
@@ -16,6 +17,22 @@ namespace Notification.Infrastructure.Services
         INotificationDispatcher dispatcher,
         ILogger<NotificationService> logger) : INotificationService
     {
+        public async Task<IEnumerable<NotificationResponseDTO>> GetHistoryAsync(NotificationStatus? status, ChannelType? channel)
+        {
+            var entities = await repository.GetAllAsync(status, channel);
+
+            return entities.Select(n => new NotificationResponseDTO(
+                n.Id,
+                n.Recipient,
+                n.Content,
+                n.Channel,
+                n.Status,
+                n.SucceededProvider,
+                n.CreatedAt,
+                n.LastModifiedAt
+                ));
+        }
+
         public async Task ProcessNotificationAsync(string recipient, string content, ChannelType channel)
         {
             var notification = new NotificationEntity(recipient, content, channel);
