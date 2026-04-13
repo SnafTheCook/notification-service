@@ -10,7 +10,9 @@ using Notification.Infrastructure.Settings;
 using Scalar.AspNetCore;
 using FluentValidation;
 using Serilog;
+using MassTransit;
 using Notification.Infrastructure.Interfaces;
+using Notification.Infrastructure.Consumers;
 using Notification.Api.Middleware;
 using Notification.Api.Filters;
 
@@ -47,6 +49,11 @@ namespace Notification.Api
 
             builder.Services.AddHostedService<RetryWorker>();
             builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+            builder.Services.AddMassTransit(x =>
+            {
+                x.AddConsumer<PetFedConsumer>();
+                x.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
+            });
 
             builder.Host.UseSerilog();
 
