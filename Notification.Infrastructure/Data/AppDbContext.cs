@@ -20,9 +20,7 @@ namespace Notification.Infrastructure.Data
             modelBuilder.Entity<NotificationEntity>(builder =>
             {
                 builder.HasKey(n => n.Id);
-                builder.Property(n => n.Recipient).IsRequired().HasConversion(
-                    r => r.Value,
-                    v => Recipient.Create(v, Domain.Enums.ChannelType.Sms));
+                builder.Property(n => n.Recipient).IsRequired();
                 builder.Property(n => n.Content).IsRequired();
             });
         }
