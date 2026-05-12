@@ -37,7 +37,10 @@ namespace Notification.Api
                 options.Filters.Add<ValidationFilter>();
             });
             builder.Services.AddOpenApi();
-            builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection("NotificationSettings"));
+            builder.Services.AddOptions<NotificationSettings>()
+                .Bind(builder.Configuration.GetSection("NotificationSettings"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
             builder.Services.AddTransient<INotificationProvider, TwilioSmsProvider>();
             builder.Services.AddTransient<INotificationProvider, AmazonSnsEmailProvider>();
