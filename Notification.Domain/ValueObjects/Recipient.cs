@@ -1,4 +1,5 @@
 ﻿using Notification.Domain.Enums;
+using Notification.Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +19,13 @@ namespace Notification.Domain.ValueObjects
         public static Recipient Create(string value, ChannelType channelType)
         {
             if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentNullException("Recipient cannot be empty!");
+                throw new InvalidRecipientException("Recipient cannot be empty!");
 
             if (channelType == ChannelType.Email && !value.Contains("@"))
-                throw new ArgumentException("Invalid email format.");
+                throw new InvalidRecipientException("Invalid email format.");
 
             if (channelType == ChannelType.Sms && value.Length < 5)
-                throw new ArgumentException("Invalid phone number format");
+                throw new InvalidRecipientException("Invalid phone number format");
 
             return new Recipient(value);
         }

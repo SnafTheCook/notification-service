@@ -6,8 +6,5 @@ using System.Threading.Tasks;
 
 namespace Notification.Domain.Exceptions
 {
-    public class InvalidRecipientException(string message) : DomainException(message)
-    {
-
-    }
+    public class InvalidRecipientException(string message) : DomainException(message);
 }
