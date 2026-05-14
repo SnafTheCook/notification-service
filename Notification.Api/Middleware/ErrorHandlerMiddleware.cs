@@ -1,4 +1,5 @@
-﻿using Notification.Domain.Wrappers;
+﻿using Notification.Domain.Exceptions;
+using Notification.Domain.Wrappers;
 
 namespace Notification.Api.Middleware
 {
@@ -12,10 +13,18 @@ namespace Notification.Api.Middleware
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message);
+                logger.LogError(ex, "An unhandled exception occured");
+
+                var (statusCode, errorMessage) = ex switch
+                {
+                    DomainException => (StatusCodes.Status400BadRequest, ex.Message),
+                    _ => (StatusCodes.Status500InternalServerError, "Internal server error")
+                };
+
                 context.Response.ContentType = "application/json";
-                context.Response.StatusCode = 500;
-                await context.Response.WriteAsJsonAsync(ApiResponse.Fail("Internal Server Error"));
+                context.Response.StatusCode = statusCode;
+
+                await context.Response.WriteAsJsonAsync(ApiResponse.Fail(errorMessage));
             }
         }
     }
