@@ -19,6 +19,7 @@ namespace Notification.Domain.Entities
         public string? SucceededProvider { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime? LastModifiedAt { get; private set; }
+        public DateTime? SentAt { get; private set; }
 
         private const int MaxAttempts = 3;
         public bool CanRetry => AttemptCount < MaxAttempts && Status == NotificationStatus.AwaitingRetry;
@@ -38,6 +39,7 @@ namespace Notification.Domain.Entities
             Status = NotificationStatus.Sent;
             SucceededProvider = providerName;
             LastModifiedAt = DateTime.UtcNow;
+            SentAt = DateTime.UtcNow;
         }
         public void MarkForRetry()
         {
