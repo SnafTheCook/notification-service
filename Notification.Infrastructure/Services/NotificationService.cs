@@ -4,6 +4,7 @@ using Notification.Domain.Entities;
 using Notification.Domain.Enums;
 using Notification.Domain.Interfaces;
 using Notification.Infrastructure.Interfaces;
+using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace Notification.Infrastructure.Services
     public class NotificationService(
         INotificationRepository repository,
         INotificationDispatcher dispatcher,
+        IDeliveryPolicy policy,
         ILogger<NotificationService> logger) : INotificationService
     {
         public async Task<IEnumerable<NotificationResponseDTO>> GetHistoryAsync(NotificationStatus? status, ChannelType? channel)
@@ -36,8 +38,18 @@ namespace Notification.Infrastructure.Services
         public async Task ProcessNotificationAsync(string recipient, string content, ChannelType channel)
         {
             var notification = new NotificationEntity(recipient, content, channel);
-
             await repository.AddAsync(notification);
+
+            var history = await repository.GetAllAsync(null, channel);
+
+            if (!policy.CanSend(notification, history))
+            {
+                logger.LogWarning("Policy blocked notification to {recipient}", recipient);
+                notification.MarkAsFailedPermanently();
+                await repository.UpdateAsync(notification);
+                return;
+            }
+
             await dispatcher.TryDispatchAsync(notification);
             await repository.UpdateAsync(notification);
 
