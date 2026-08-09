@@ -15,6 +15,7 @@ using Notification.Infrastructure.Interfaces;
 using Notification.Infrastructure.Consumers;
 using Notification.Api.Middleware;
 using Notification.Api.Filters;
+using Notification.Domain.Services;
 
 namespace Notification.Api
 {
@@ -49,6 +50,7 @@ namespace Notification.Api
             builder.Services.AddScoped<NotificationDispatcher>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<IDeliveryPolicy, RateLimitPolicy>();
 
             builder.Services.AddHostedService<RetryWorker>();
             builder.Services.AddValidatorsFromAssemblyContaining<Program>();
