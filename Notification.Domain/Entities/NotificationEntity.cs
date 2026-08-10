@@ -20,16 +20,20 @@ namespace Notification.Domain.Entities
         public DateTime CreatedAt { get; private set; }
         public DateTime? LastModifiedAt { get; private set; }
         public DateTime? SentAt { get; private set; }
+        public Guid CorrelationId { get; private set; }
 
         private const int MaxAttempts = 3;
         public bool CanRetry => AttemptCount < MaxAttempts && Status == NotificationStatus.AwaitingRetry;
 
-        public NotificationEntity(string recipient, string content, ChannelType channel)
+        public NotificationEntity(string recipient, string content, ChannelType channel, Guid correlationId)
         {
             Id = Guid.NewGuid();
             Recipient = Recipient.Create(recipient, channel);
             Content = MessageContent.Create(content);
             Channel = channel;
+            Status = NotificationStatus.Pending;
+            CreatedAt = DateTime.UtcNow;
+            CorrelationId = correlationId;
             Status = NotificationStatus.Pending;
             CreatedAt = DateTime.UtcNow;
         }
