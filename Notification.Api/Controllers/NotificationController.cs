@@ -19,6 +19,12 @@ namespace Notification.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> SendNotification([FromBody]SendNotificationRequest request)
         {
+            if (!Request.Headers.TryGetValue("X-Correlation-ID", out var correlationIdStr) ||
+                !Guid.TryParse(correlationIdStr, out var correlationId))
+            {
+                correlationId = Guid.NewGuid();
+            }
+
             await notificationService.ProcessNotificationAsync(request.Recipient, request.Content, request.Channel);
 
             return Ok(new { Message = "Request accepted and processing started." });
