@@ -14,11 +14,11 @@ namespace Notification.Infrastructure.Consumers
     {
         public async Task Consume(ConsumeContext<PetFedEvent> context)
         {
-            var @event = context.Message;
+            var correlationId = context.CorrelationId ?? Guid.NewGuid();
 
             await notificationService.ProcessNotificationAsync(
-                @event.OwnerEmail,
-                $"Your pet {@event.PetName} was just fed!",
+                context.Message.OwnerEmail,
+                $"Your pet {context.Message.PetName} was just fed!",
                 ChannelType.Email);
         }
     }
