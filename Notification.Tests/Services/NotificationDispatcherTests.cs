@@ -49,7 +49,7 @@ namespace Notification.Tests.Services
             var mockLogger = new Mock<ILogger<NotificationDispatcher>>();
 
             var dispatcher = new NotificationDispatcher(providers, settings, mockLogger.Object);
-            var note = new NotificationEntity("123456789", "Hello World!", ChannelType.Sms);
+            var note = new NotificationEntity("123456789", "Hello World!", ChannelType.Sms, Guid.NewGuid());
 
             var result = await dispatcher.TryDispatchAsync(note);
 
@@ -89,7 +89,7 @@ namespace Notification.Tests.Services
             var mockLogger = new Mock<ILogger<NotificationDispatcher>>();
 
             var dispatcher = new NotificationDispatcher(new List<INotificationProvider> { providerMock.Object }, settings, mockLogger.Object);
-            var note = new NotificationEntity("123456789", "test", ChannelType.Sms);
+            var note = new NotificationEntity("123456789", "test", ChannelType.Sms, Guid.NewGuid());
 
             var result = await dispatcher.TryDispatchAsync(note);
 
