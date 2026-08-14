@@ -19,7 +19,8 @@ namespace Notification.Infrastructure.Consumers
             await notificationService.ProcessNotificationAsync(
                 context.Message.OwnerEmail,
                 $"Your pet {context.Message.PetName} was just fed!",
-                ChannelType.Email);
+                ChannelType.Email,
+                correlationId);
         }
     }
 }

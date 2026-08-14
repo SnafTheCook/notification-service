@@ -10,7 +10,7 @@ namespace Notification.Infrastructure.Interfaces
 {
     public interface INotificationService
     {
-        Task ProcessNotificationAsync(string recipient, string content, ChannelType channel);
+        Task ProcessNotificationAsync(string recipient, string content, ChannelType channel, Guid correlationId);
         Task<IEnumerable<NotificationResponseDTO>> GetHistoryAsync(NotificationStatus? status, ChannelType? channel);
     }
 }

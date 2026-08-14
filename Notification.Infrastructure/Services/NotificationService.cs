@@ -35,9 +35,9 @@ namespace Notification.Infrastructure.Services
                 ));
         }
 
-        public async Task ProcessNotificationAsync(string recipient, string content, ChannelType channel)
+        public async Task ProcessNotificationAsync(string recipient, string content, ChannelType channel, Guid correlationId)
         {
-            var notification = new NotificationEntity(recipient, content, channel);
+            var notification = new NotificationEntity(recipient, content, channel, correlationId);
             await repository.AddAsync(notification);
 
             var history = await repository.GetAllAsync(null, channel);
