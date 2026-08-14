@@ -25,7 +25,7 @@ namespace Notification.Api.Controllers
                 correlationId = Guid.NewGuid();
             }
 
-            await notificationService.ProcessNotificationAsync(request.Recipient, request.Content, request.Channel);
+            await notificationService.ProcessNotificationAsync(request.Recipient, request.Content, request.Channel, correlationId);
 
             return Ok(new { Message = "Request accepted and processing started." });
         }
