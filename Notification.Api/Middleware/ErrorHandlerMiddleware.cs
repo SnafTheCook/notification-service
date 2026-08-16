@@ -24,7 +24,13 @@ namespace Notification.Api.Middleware
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = statusCode;
 
-                await context.Response.WriteAsJsonAsync(ApiResponse.Fail(errorMessage));
+                var id = context.Request.Headers["X-Correlation-ID"].FirstOrDefault();
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    Success = false,
+                    Error = errorMessage,
+                    CorrelationId = id
+                });
             }
         }
     }
