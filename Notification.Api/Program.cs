@@ -64,6 +64,9 @@ namespace Notification.Api
 
             var app = builder.Build();
 
+            app.UseMiddleware<CorrelationIdMiddleware>();
+            app.UseMiddleware<ErrorHandlerMiddleware>();
+
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
