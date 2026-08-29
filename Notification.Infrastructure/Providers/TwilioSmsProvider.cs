@@ -15,9 +15,9 @@ namespace Notification.Infrastructure.Providers
 
         public ChannelType SupportedChannel => ChannelType.Sms;
 
-        public async Task<bool> SendAsync(Recipient recipient, string content)
+        public async Task<bool> SendAsync(Recipient recipient, string content, CancellationToken ct)
         {
-            await Task.Delay(100);
+            await Task.Delay(100, ct);
             return true;
         }
     }
