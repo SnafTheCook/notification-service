@@ -20,7 +20,8 @@ namespace Notification.Infrastructure.Consumers
                 context.Message.OwnerEmail,
                 $"Your pet {context.Message.PetName} was just fed!",
                 ChannelType.Email,
-                correlationId);
+                correlationId,
+                context.CancellationToken);
         }
     }
 }

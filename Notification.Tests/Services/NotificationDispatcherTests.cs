@@ -22,11 +22,11 @@ namespace Notification.Tests.Services
 
             mockProvider1.Setup(p => p.ProviderName).Returns("Twilio");
             mockProvider1.Setup(p => p.SupportedChannel).Returns(ChannelType.Sms);
-            mockProvider1.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>())).ThrowsAsync(new Exception("API down"));
+            mockProvider1.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("API down"));
 
             mockProvider2.Setup(p => p.ProviderName).Returns("Vonage");
             mockProvider2.Setup(p => p.SupportedChannel).Returns(ChannelType.Sms);
-            mockProvider2.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>())).ReturnsAsync(true);
+            mockProvider2.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             var providers = new List<INotificationProvider> { mockProvider1.Object, mockProvider2.Object };
 
@@ -51,14 +51,15 @@ namespace Notification.Tests.Services
             var dispatcher = new NotificationDispatcher(providers, settings, mockLogger.Object);
             var note = new NotificationEntity("123456789", "Hello World!", ChannelType.Sms, Guid.NewGuid());
 
-            var result = await dispatcher.TryDispatchAsync(note);
+            var result = await dispatcher.TryDispatchAsync(note, default);
 
             result.Should().BeTrue();
 
-            mockProvider1.Verify(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>()), Times.Exactly(3));
+            mockProvider1.Verify(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
             mockProvider2.Verify(p => p.SendAsync(It.Is<Recipient>(
                 r => r.Value == "123456789"), 
-                "Hello World!"), 
+                "Hello World!",
+                default), 
                 Times.Once());
         }
 
@@ -68,7 +69,7 @@ namespace Notification.Tests.Services
             var providerMock = new Mock<INotificationProvider>();
             providerMock.Setup(p => p.ProviderName).Returns("Twilio");
             providerMock.Setup(p => p.SupportedChannel).Returns(ChannelType.Sms);
-            providerMock.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>()))
+            providerMock.Setup(p => p.SendAsync(It.IsAny<Recipient>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Failed reaching provider"));
 
             var settings = Options.Create(new NotificationSettings
@@ -91,7 +92,7 @@ namespace Notification.Tests.Services
             var dispatcher = new NotificationDispatcher(new List<INotificationProvider> { providerMock.Object }, settings, mockLogger.Object);
             var note = new NotificationEntity("123456789", "test", ChannelType.Sms, Guid.NewGuid());
 
-            var result = await dispatcher.TryDispatchAsync(note);
+            var result = await dispatcher.TryDispatchAsync(note, default);
 
             result.Should().BeFalse();
             note.Status.Should().NotBe(NotificationStatus.Sent);

@@ -35,7 +35,7 @@ namespace Notification.Infrastructure.Services
                 ));
         }
 
-        public async Task ProcessNotificationAsync(string recipient, string content, ChannelType channel, Guid correlationId)
+        public async Task ProcessNotificationAsync(string recipient, string content, ChannelType channel, Guid correlationId, CancellationToken ct)
         {
             var notification = new NotificationEntity(recipient, content, channel, correlationId);
             await repository.AddAsync(notification);
@@ -50,7 +50,7 @@ namespace Notification.Infrastructure.Services
                 return;
             }
 
-            await dispatcher.TryDispatchAsync(notification);
+            await dispatcher.TryDispatchAsync(notification, ct);
             await repository.UpdateAsync(notification);
 
             logger.LogInformation("Processed notification {id}. Created at: {createdAt}. Status: {status}.",

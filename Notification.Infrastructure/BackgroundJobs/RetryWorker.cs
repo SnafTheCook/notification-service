@@ -37,7 +37,7 @@ namespace Notification.Infrastructure.BackgroundJobs
                             continue;
                         }
 
-                        await dispatcher.TryDispatchAsync(notification);
+                        await dispatcher.TryDispatchAsync(notification, stoppingToken);
 
                         await repository.UpdateAsync(notification, stoppingToken);
                     }
