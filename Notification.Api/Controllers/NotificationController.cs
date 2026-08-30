@@ -17,7 +17,7 @@ namespace Notification.Api.Controllers
     public class NotificationController(INotificationService notificationService) : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> SendNotification([FromBody]SendNotificationRequest request)
+        public async Task<IActionResult> SendNotification([FromBody]SendNotificationRequest request, CancellationToken ct)
         {
             if (!Request.Headers.TryGetValue("X-Correlation-ID", out var correlationIdStr) ||
                 !Guid.TryParse(correlationIdStr, out var correlationId))
@@ -25,7 +25,7 @@ namespace Notification.Api.Controllers
                 correlationId = Guid.NewGuid();
             }
 
-            await notificationService.ProcessNotificationAsync(request.Recipient, request.Content, request.Channel, correlationId);
+            await notificationService.ProcessNotificationAsync(request.Recipient, request.Content, request.Channel, correlationId, ct);
 
             return Ok(new { Message = "Request accepted and processing started." });
         }
