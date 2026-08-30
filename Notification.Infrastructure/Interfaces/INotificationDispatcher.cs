@@ -9,6 +9,6 @@ namespace Notification.Infrastructure.Interfaces
 {
     public interface INotificationDispatcher
     {
-        Task<bool> TryDispatchAsync(NotificationEntity notification);
+        Task<bool> TryDispatchAsync(NotificationEntity notification, CancellationToken ct);
     }
 }

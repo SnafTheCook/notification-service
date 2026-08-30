@@ -24,7 +24,7 @@ namespace Notification.Infrastructure.Services
             })
             .Build();
 
-        public async Task<bool> TryDispatchAsync(NotificationEntity notification)
+        public async Task<bool> TryDispatchAsync(NotificationEntity notification, CancellationToken ct)
         {
             var channelConfig = settings.Value.Channels
                 .FirstOrDefault(c => c.Type == notification.Channel);
@@ -44,8 +44,8 @@ namespace Notification.Infrastructure.Services
                 {
                     var result = await _retryPipeline.ExecuteAsync(async token =>
                     {
-                        return await provider.SendAsync(notification.Recipient, notification.Content);
-                    });
+                        return await provider.SendAsync(notification.Recipient, notification.Content, token);
+                    }, ct);
 
                     if (result)
                     {

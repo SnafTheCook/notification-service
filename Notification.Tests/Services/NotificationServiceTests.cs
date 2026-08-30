@@ -34,13 +34,13 @@ namespace Notification.Tests.Services
               .Returns(true);
 
             _mockDispatcher
-                .Setup(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>()))
-                .Callback<NotificationEntity>(n => n.MarkAsSent("TestProvider"))
+                .Setup(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>(), default))
+                .Callback<NotificationEntity, CancellationToken>((n, _) => n.MarkAsSent("TestProvider"))
                 .ReturnsAsync(true);
 
-            await _notificationService.ProcessNotificationAsync("test@test.com", "Hello", ChannelType.Email, Guid.NewGuid());
+            await _notificationService.ProcessNotificationAsync("test@test.com", "Hello", ChannelType.Email, Guid.NewGuid(), default);
 
-            _mockDispatcher.Verify(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>()), Times.Once);
+            _mockDispatcher.Verify(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>(), default), Times.Once);
 
             _mockRepo.Verify(r => r.UpdateAsync(
                 It.Is<NotificationEntity>(n => n.Status == NotificationStatus.Sent),
@@ -56,13 +56,13 @@ namespace Notification.Tests.Services
             _mockPolicy.Setup(p => p.CanSend(It.IsAny<NotificationEntity>(), It.IsAny<IEnumerable<NotificationEntity>>()))
                        .Returns(true);
 
-            _mockDispatcher.Setup(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>()))
-                           .Callback<NotificationEntity>(n => n.MarkAsSent("TestProvider"))
+            _mockDispatcher.Setup(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>(), default))
+                           .Callback<NotificationEntity, CancellationToken>((n, _) => n.MarkAsSent("TestProvider"))
                            .ReturnsAsync(true);
 
-            await _notificationService.ProcessNotificationAsync(recipient, "Hello", ChannelType.Email, Guid.NewGuid());
+            await _notificationService.ProcessNotificationAsync(recipient, "Hello", ChannelType.Email, Guid.NewGuid(), default);
 
-            _mockDispatcher.Verify(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>()), Times.Once);
+            _mockDispatcher.Verify(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>(), default), Times.Once);
 
             _mockRepo.Verify(r => r.UpdateAsync(
                 It.Is<NotificationEntity>(n => n.Status == NotificationStatus.Sent),
@@ -76,9 +76,9 @@ namespace Notification.Tests.Services
             _mockPolicy.Setup(p => p.CanSend(It.IsAny<NotificationEntity>(), It.IsAny<IEnumerable<NotificationEntity>>()))
                        .Returns(false);
 
-            await _notificationService.ProcessNotificationAsync("test@test.com", "Hello", ChannelType.Email, Guid.NewGuid());
+            await _notificationService.ProcessNotificationAsync("test@test.com", "Hello", ChannelType.Email, Guid.NewGuid(), default);
 
-            _mockDispatcher.Verify(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>()), Times.Never);
+            _mockDispatcher.Verify(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>(), default), Times.Never);
 
             _mockRepo.Verify(r => r.UpdateAsync(It.Is<NotificationEntity>(n => n.Status == NotificationStatus.Failed), It.IsAny<CancellationToken>()), Times.Once);
         }

@@ -12,6 +12,6 @@ namespace Notification.Domain.Interfaces
     {
         string ProviderName { get; }
         ChannelType SupportedChannel { get; }
-        Task<bool> SendAsync(Recipient recipient, string content);
+        Task<bool> SendAsync(Recipient recipient, string content, CancellationToken ct);
     }
 }
