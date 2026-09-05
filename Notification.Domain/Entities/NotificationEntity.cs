@@ -1,4 +1,5 @@
-﻿using Notification.Domain.Enums;
+﻿using Notification.Domain.Common;
+using Notification.Domain.Enums;
 using Notification.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -25,17 +26,28 @@ namespace Notification.Domain.Entities
         private const int MaxAttempts = 3;
         public bool CanRetry => AttemptCount < MaxAttempts && Status == NotificationStatus.AwaitingRetry;
 
-        public NotificationEntity(string recipient, string content, ChannelType channel, Guid correlationId)
+        private NotificationEntity(string recipient, string content, ChannelType channel, Guid correlationId)
         {
             Id = Guid.NewGuid();
-            Recipient = Recipient.Create(recipient, channel);
-            Content = MessageContent.Create(content);
+            Recipient = Recipient.Create(recipient, channel).Value;
+            Content = MessageContent.Create(content).Value;
             Channel = channel;
             Status = NotificationStatus.Pending;
             CreatedAt = DateTime.UtcNow;
             CorrelationId = correlationId;
             Status = NotificationStatus.Pending;
             CreatedAt = DateTime.UtcNow;
+        }
+
+        public static Result<NotificationEntity> Create(string recipient, string content, ChannelType channel, Guid correlationId)
+        {
+            var recipientResult = Recipient.Create(recipient, channel);
+            if (recipientResult.IsFailure) return Result<NotificationEntity>.Failure(recipientResult.Error);
+
+            var contentResult = MessageContent.Create(content);
+            if (contentResult.IsFailure) return Result<NotificationEntity>.Failure(contentResult.Error);
+
+            return Result<NotificationEntity>.Success(new NotificationEntity(recipientResult.Value, contentResult.Value, channel, correlationId));
         }
 
         public void MarkAsSent(string providerName)
