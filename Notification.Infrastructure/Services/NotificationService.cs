@@ -37,7 +37,15 @@ namespace Notification.Infrastructure.Services
 
         public async Task ProcessNotificationAsync(string recipient, string content, ChannelType channel, Guid correlationId, CancellationToken ct)
         {
-            var notification = new NotificationEntity(recipient, content, channel, correlationId);
+            var result = NotificationEntity.Create(recipient, content, channel, correlationId);
+
+            if (result.IsFailure)
+            {
+                logger.LogWarning("Validation failed: {Error}", result.Error.Description);
+                return;
+            }
+
+            var notification = result.Value;
             await repository.AddAsync(notification);
 
             var history = await repository.GetAllAsync(null, channel);

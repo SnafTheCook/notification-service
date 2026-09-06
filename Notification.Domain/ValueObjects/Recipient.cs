@@ -1,4 +1,5 @@
-﻿using Notification.Domain.Enums;
+﻿using Notification.Domain.Common;
+using Notification.Domain.Enums;
 using Notification.Domain.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -16,18 +17,18 @@ namespace Notification.Domain.ValueObjects
             Value = value;
         }
 
-        public static Recipient Create(string value, ChannelType channelType)
+        public static Result<Recipient> Create(string value, ChannelType channelType)
         {
             if (string.IsNullOrWhiteSpace(value))
-                throw new InvalidRecipientException("Recipient cannot be empty!");
+                return Result<Recipient>.Failure(new Error("Recipient.Empty", "Recipient cannot be empty!"));
 
             if (channelType == ChannelType.Email && !value.Contains("@"))
-                throw new InvalidRecipientException("Invalid email format.");
+                return Result<Recipient>.Failure(new Error("Recipient.InvalidEmail", "Invalid email format."));
 
             if (channelType == ChannelType.Sms && value.Length < 5)
-                throw new InvalidRecipientException("Invalid phone number format");
+                return Result<Recipient>.Failure(new Error("Recipient.InvalidPhoneNumber", "Invalid phone number format"));
 
-            return new Recipient(value);
+            return Result<Recipient>.Success(new Recipient(value));
         }
 
         public static implicit operator string(Recipient recipient) => recipient.Value;
