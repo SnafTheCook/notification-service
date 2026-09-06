@@ -49,9 +49,9 @@ namespace Notification.Tests.Services
             var mockLogger = new Mock<ILogger<NotificationDispatcher>>();
 
             var dispatcher = new NotificationDispatcher(providers, settings, mockLogger.Object);
-            var note = new NotificationEntity("123456789", "Hello World!", ChannelType.Sms, Guid.NewGuid());
+            var note = NotificationEntity.Create("123456789", "Hello World!", ChannelType.Sms, Guid.NewGuid());
 
-            var result = await dispatcher.TryDispatchAsync(note, default);
+            var result = await dispatcher.TryDispatchAsync(note.Value, default);
 
             result.Should().BeTrue();
 
@@ -90,12 +90,12 @@ namespace Notification.Tests.Services
             var mockLogger = new Mock<ILogger<NotificationDispatcher>>();
 
             var dispatcher = new NotificationDispatcher(new List<INotificationProvider> { providerMock.Object }, settings, mockLogger.Object);
-            var note = new NotificationEntity("123456789", "test", ChannelType.Sms, Guid.NewGuid());
+            var note = NotificationEntity.Create("123456789", "test", ChannelType.Sms, Guid.NewGuid());
 
-            var result = await dispatcher.TryDispatchAsync(note, default);
+            var result = await dispatcher.TryDispatchAsync(note.Value, default);
 
             result.Should().BeFalse();
-            note.Status.Should().NotBe(NotificationStatus.Sent);
+            note.Value.Status.Should().NotBe(NotificationStatus.Sent);
         }
     }
 }
