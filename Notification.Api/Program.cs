@@ -51,6 +51,7 @@ namespace Notification.Api
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<IDeliveryPolicy, RateLimitPolicy>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             builder.Services.AddHostedService<RetryWorker>();
             builder.Services.AddValidatorsFromAssemblyContaining<Program>();
