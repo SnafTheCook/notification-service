@@ -17,7 +17,8 @@ namespace Notification.Infrastructure.Services
         INotificationRepository repository,
         INotificationDispatcher dispatcher,
         IDeliveryPolicy policy,
-        ILogger<NotificationService> logger) : INotificationService
+        ILogger<NotificationService> logger,
+        IUnitOfWork unitOfWork) : INotificationService
     {
         public async Task<IEnumerable<NotificationResponseDTO>> GetHistoryAsync(NotificationStatus? status, ChannelType? channel)
         {
@@ -46,25 +47,42 @@ namespace Notification.Infrastructure.Services
             }
 
             var notification = result.Value;
-            await repository.AddAsync(notification);
 
-            var history = await repository.GetAllAsync(null, channel);
+            await unitOfWork.BeginTransactionAsync(ct);
 
-            if (!policy.CanSend(notification, history))
+            try
             {
-                logger.LogWarning("Policy blocked notification to {recipient}", recipient);
-                notification.MarkAsFailedPermanently();
-                await repository.UpdateAsync(notification);
-                return;
+                await repository.AddAsync(notification);
+                var history = await repository.GetAllAsync(null, channel);
+
+                if (!policy.CanSend(notification, history))
+                {
+                    logger.LogWarning("Policy blocked notification to {recipient}", recipient);
+                    notification.MarkAsFailedPermanently();
+                }
+                else
+                {
+                    var success = await dispatcher.TryDispatchAsync(notification, ct);
+                    if (!success)
+                    {
+                        notification.MarkForRetry();
+                    }
+                }
+
+                await unitOfWork.SaveChangesAsync(ct);
+                await unitOfWork.CommitTransactionAsync(ct);
+
+                logger.LogInformation("Processed notification {id}. Created at: {createdAt}. Status: {status}.",
+                    notification.Id,
+                    notification.CreatedAt,
+                    notification.Status);
             }
-
-            await dispatcher.TryDispatchAsync(notification, ct);
-            await repository.UpdateAsync(notification);
-
-            logger.LogInformation("Processed notification {id}. Created at: {createdAt}. Status: {status}.",
-                notification.Id,
-                notification.CreatedAt,
-                notification.Status);
+            catch (Exception ex)
+            {
+                await unitOfWork.RollbackTransactionAsync(ct);
+                logger.LogError(ex, "Transaction failed for notification {id}", notification.Id);
+                throw;
+            }
         }
     }
 }
