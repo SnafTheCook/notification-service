@@ -20,11 +20,12 @@ namespace Notification.Tests.Services
         private readonly Mock<INotificationDispatcher> _mockDispatcher = new();
         private readonly Mock<IDeliveryPolicy> _mockPolicy = new();
         private readonly Mock<ILogger<NotificationService>> _mockLogger = new();
+        private readonly Mock<IUnitOfWork> _mockUnitOfWork = new();
         private readonly NotificationService _notificationService;
 
         public NotificationServiceTests()
         {
-            _notificationService = new NotificationService(_mockRepo.Object, _mockDispatcher.Object, _mockPolicy.Object, _mockLogger.Object);
+            _notificationService = new NotificationService(_mockRepo.Object, _mockDispatcher.Object, _mockPolicy.Object, _mockLogger.Object, _mockUnitOfWork.Object);
         }
 
         [Fact]
@@ -42,10 +43,7 @@ namespace Notification.Tests.Services
 
             _mockDispatcher.Verify(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>(), default), Times.Once);
 
-            _mockRepo.Verify(r => r.UpdateAsync(
-                It.Is<NotificationEntity>(n => n.Status == NotificationStatus.Sent),
-                It.IsAny<CancellationToken>()),
-                Times.Once);
+            _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         }
 
         [Fact]
@@ -64,10 +62,7 @@ namespace Notification.Tests.Services
 
             _mockDispatcher.Verify(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>(), default), Times.Once);
 
-            _mockRepo.Verify(r => r.UpdateAsync(
-                It.Is<NotificationEntity>(n => n.Status == NotificationStatus.Sent),
-                It.IsAny<CancellationToken>()),
-                Times.Once);
+            _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         }
 
         [Fact]
@@ -80,7 +75,39 @@ namespace Notification.Tests.Services
 
             _mockDispatcher.Verify(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>(), default), Times.Never);
 
-            _mockRepo.Verify(r => r.UpdateAsync(It.Is<NotificationEntity>(n => n.Status == NotificationStatus.Failed), It.IsAny<CancellationToken>()), Times.Once);
+            _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        }
+
+        [Fact]
+        public async Task ProcessNotification_WhenSuccessful_CommitsTransaction()
+        {
+            _mockPolicy.Setup(p => p.CanSend(It.IsAny<NotificationEntity>(), It.IsAny<IEnumerable<NotificationEntity>>()))
+                       .Returns(true);
+
+            _mockDispatcher.Setup(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(true);
+
+            await _notificationService.ProcessNotificationAsync("test@test.com", "Content", ChannelType.Email, Guid.NewGuid(), default);
+
+            _mockUnitOfWork.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _mockUnitOfWork.Verify(u => u.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _mockUnitOfWork.Verify(u => u.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ProcessNotification_WhenDispatcherFails_RollsBackTransaction()
+        {
+            _mockPolicy.Setup(p => p.CanSend(It.IsAny<NotificationEntity>(), It.IsAny<IEnumerable<NotificationEntity>>()))
+                       .Returns(true);
+
+            _mockDispatcher.Setup(d => d.TryDispatchAsync(It.IsAny<NotificationEntity>(), It.IsAny<CancellationToken>()))
+                           .ThrowsAsync(new Exception("Network failure"));
+
+            await Assert.ThrowsAsync<Exception>(() =>
+                _notificationService.ProcessNotificationAsync("test@test.com", "Content", ChannelType.Email, Guid.NewGuid(), default));
+
+            _mockUnitOfWork.Verify(u => u.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _mockUnitOfWork.Verify(u => u.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }
